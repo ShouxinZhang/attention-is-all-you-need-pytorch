@@ -1,0 +1,23 @@
+# Repository Structure
+
+- `AGENTS.md`: Instruction manual for AI agents (English version).
+- `AGENTS_zh-cn.md`: Instruction manual for AI agents (Chinese version).
+- `apply_bpe.py`: Script to apply Byte Pair Encoding.
+- `learn_bpe.py`: Script to learn Byte Pair Encoding.
+- `LICENSE`: Project license.
+- `preprocess.py`: Data preprocessing script.
+- `README.md`: Project overview and setup instructions.
+- `Requirements.txt`: Python dependencies (legacy).
+- `venv/`: Virtual environment for modern hardware compatibility.
+- `.data/`: Raw dataset directory.
+  - `multi30k/`: Multi30k dataset files (train, val, test).
+- `multi30k_de_en.pkl`: Processed dataset for training.
+- `transformer/`: Core Transformer model implementation.
+  - `__init__.py`: Package initialization.
+  - `Constants.py`: Constant values used across the project.
+  - `Layers.py`: Implementation of Transformer layers.
+  - `Models.py`: Transformer model definitions.
+  - `Modules.py`: Transformer's basic building blocks (e.g., Attention).
+  - `Optim.py`: Optimizer wrapper for learning rate scheduling.
+  - `SubLayers.py`: Sub-layer implementations (e.g., Feed-Forward, LayerNorm).
+  - `Translator.py`: Translation logic using the trained model.
