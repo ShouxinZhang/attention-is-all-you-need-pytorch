@@ -19,6 +19,7 @@ Positive Prompts (standard operations, highly encouraged behaviors):
 - Store development logs for each development cycle in `docs/dev_logs`, detailing which files were modified and what was done. Update `dev_logs` after every modification. The `dev_logs` documentation should ideally have database-like properties allowing for snapshot rollbacks. The storage format should use the development date as the folder name, with filenames inside representing the development content. Each file must display the specific changes, the files modified, and the modification time (precise to the second).
 - Automatically update `repository-structure.md`.
 - Automate everything that can be automated for the user instead of asking them to do it manually. (Prompt for necessary information if needed).
+- Since your knowledge is likely outdated, when it comes to installing SDKs or Python package services, please obtain the latest version online and install it by default, instead of an outdated version number.
 
 Negative Prompts (strictly prohibited behaviors):
 
@@ -26,3 +27,4 @@ Negative Prompts (strictly prohibited behaviors):
 - Failing to write logs in `dev_logs` after completing development, resulting in loss of development history and difficulty in later maintenance.
 - Failing to update the `repository-structure.md` document after developing new features.
 - Being lazy and asking the user to manually perform tasks that you could complete via the command line or a script (Negative example: 'Once you (the user) complete XXX, I (the LLM) can do YYY'). This is strictly prohibited! If you cannot complete it independently, you must state that once you are provided with XXX information, you can then proceed with YYY.
+- Installing an outdated SDK or package version, such as mathlib 4.26 or pytorch 2.7, etc. The latest versions have long exceeded these old versions, which would bring version issues to the user.
