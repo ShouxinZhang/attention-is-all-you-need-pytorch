@@ -82,7 +82,7 @@ def eval_epoch(model, validation_data, device, opt):
 
     return total_loss/n_word_total, n_word_correct/n_word_total
 
-def train(model, training_data, validation_data, optimizer, device, opt):
+def train(model, training_data, validation_data, optimizer, device, opt, start_epoch=0):
     if opt.use_tb:
         from torch.utils.tensorboard import SummaryWriter
         tb_writer = SummaryWriter(log_dir=os.path.join(opt.output_dir, 'tensorboard'))
@@ -90,12 +90,13 @@ def train(model, training_data, validation_data, optimizer, device, opt):
     log_train_file = os.path.join(opt.output_dir, 'train.log')
     log_valid_file = os.path.join(opt.output_dir, 'valid.log')
 
-    with open(log_train_file, 'w') as log_tf, open(log_valid_file, 'w') as log_vf:
-        log_tf.write('epoch,loss,ppl,accuracy\n')
-        log_vf.write('epoch,loss,ppl,accuracy\n')
+    if start_epoch == 0:
+        with open(log_train_file, 'w') as log_tf, open(log_valid_file, 'w') as log_vf:
+            log_tf.write('epoch,loss,ppl,accuracy\n')
+            log_vf.write('epoch,loss,ppl,accuracy\n')
 
     valid_losses = []
-    for epoch_i in range(opt.epoch):
+    for epoch_i in range(start_epoch, opt.epoch):
         print(f'[ Epoch {epoch_i} ]')
 
         start = time.time()
@@ -110,7 +111,14 @@ def train(model, training_data, validation_data, optimizer, device, opt):
         print(f'  - (Validation) ppl: {valid_ppl: 8.5f}, accuracy: {100*valid_accu:3.3f} %, elapse: {(time.time()-start)/60:3.3f} min')
 
         valid_losses += [valid_loss]
-        checkpoint = {'epoch': epoch_i, 'settings': opt, 'model': model.state_dict(), 'vocab': opt.vocab}
+        checkpoint = {
+            'epoch': epoch_i,
+            'settings': opt,
+            'model': model.state_dict(),
+            'optimizer': optimizer._optimizer.state_dict(),
+            'n_steps': optimizer.n_steps,
+            'vocab': opt.vocab
+        }
 
         if opt.save_mode == 'best' and valid_loss <= min(valid_losses):
             torch.save(checkpoint, os.path.join(opt.output_dir, 'model.chkpt'))
@@ -148,6 +156,7 @@ def main():
     parser.add_argument('-save_mode', type=str, choices=['all', 'best'], default='best')
     parser.add_argument('-no_cuda', action='store_true')
     parser.add_argument('-label_smoothing', action='store_true')
+    parser.add_argument('-checkpoint', type=str, default=None)
 
     opt = parser.parse_args()
     opt.cuda = not opt.no_cuda
@@ -194,7 +203,19 @@ def main():
         optim.Adam(model.parameters(), betas=(0.9, 0.98), eps=1e-09),
         opt.lr_mul, opt.d_model, opt.n_warmup_steps)
 
-    train(model, train_loader, valid_loader, optimizer, device, opt)
+    start_epoch = 0
+    if opt.checkpoint:
+        print(f'[Info] Loading checkpoint from {opt.checkpoint}')
+        checkpoint = torch.load(opt.checkpoint, weights_only=False)
+        model.load_state_dict(checkpoint['model'])
+        if 'optimizer' in checkpoint:
+            optimizer._optimizer.load_state_dict(checkpoint['optimizer'])
+        if 'n_steps' in checkpoint:
+            optimizer.n_steps = checkpoint['n_steps']
+        if 'epoch' in checkpoint:
+            start_epoch = checkpoint['epoch'] + 1
+
+    train(model, train_loader, valid_loader, optimizer, device, opt, start_epoch)
 
 if __name__ == '__main__':
     main()
