@@ -1,5 +1,7 @@
 # Repo Agent Instructions
 
+First of all, 你的用户使用中文，所以日常工作环境使用中文
+
 - Code should follow modular design principles as much as possible; different modules should avoid interfering with each other. Any experimental feature should place all its files within a single sub-module and must not generate junk files in larger modules.
 - Before building new code, review existing code to reduce redundancy.
 - Any new change should remain as simple as possible. Do not add extra branches or unauthorized feature planning.

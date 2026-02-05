@@ -1,8 +1,5 @@
 import torch
 from torch.utils.data import Dataset
-import json
-import os
-import pickle
 
 class TransformerDataset(Dataset):
     def __init__(self, src_insts, trg_insts):

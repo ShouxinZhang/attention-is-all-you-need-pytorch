@@ -7,7 +7,7 @@
 - `train_modern.py`: 2026 Modern training script (Optimized for RTX 5090/sm_120).
 - `README.md`: Project overview and setup instructions.
 - `requirements.txt`: Python dependencies.
-- `check_errors.sh`: Automated project error checks (pattern checks + repository-wide static type checks).
+- `check_errors.sh`: Automated project error checks (pattern checks for types, unbound variables, and unused imports + repository-wide static type checks).
 - `venv/`: Virtual environment for modern hardware compatibility (PyTorch 2.10.0+cu130).
 - `docs/`: Project documentation.
   - `architecture/repository-structure.md`: Repository architecture and module structure definition.

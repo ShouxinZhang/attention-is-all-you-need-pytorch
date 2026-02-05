@@ -65,12 +65,12 @@ else
 fi
 echo ""
 
-# --- Error 3: 'np' is not accessed (unused numpy import) ---
-echo "[Check 3] 'np' is not accessed: unused numpy imports"
+# --- Error 3: Unused imports (np, pickle, json, os) ---
+echo "[Check 3] Unused imports: np, pickle, json, os"
 # Only check project .py files, exclude .venv and __pycache__
 while IFS= read -r pyfile; do
+    # Check for 'import numpy as np'
     if grep -Pq '^import numpy as np' "$pyfile"; then
-        # Count usages of 'np.' excluding the import line itself
         NP_USAGES=$(grep -c 'np\.' "$pyfile" 2>/dev/null || true)
         if [ "$NP_USAGES" -eq 0 ]; then
             echo "  ERROR: In $pyfile, 'import numpy as np' exists but 'np' is never used."
@@ -78,7 +78,37 @@ while IFS= read -r pyfile; do
             ERRORS_FOUND=$((ERRORS_FOUND + 1))
         fi
     fi
-done < <(find "$PROJECT_DIR" -name '*.py' -not -path '*/.venv/*' -not -path '*/__pycache__/*')
+
+    # Check for 'import pickle'
+    if grep -Pq '^import pickle' "$pyfile"; then
+        PICKLE_USAGES=$(grep -c 'pickle\.' "$pyfile" 2>/dev/null || true)
+        if [ "$PICKLE_USAGES" -eq 0 ]; then
+            echo "  ERROR: In $pyfile, 'import pickle' exists but 'pickle' is never used."
+            echo "  FIX:   Remove the unused 'import pickle' line."
+            ERRORS_FOUND=$((ERRORS_FOUND + 1))
+        fi
+    fi
+
+    # Check for 'import json'
+    if grep -Pq '^import json' "$pyfile"; then
+        JSON_USAGES=$(grep -c 'json\.' "$pyfile" 2>/dev/null || true)
+        if [ "$JSON_USAGES" -eq 0 ]; then
+            echo "  ERROR: In $pyfile, 'import json' exists but 'json' is never used."
+            echo "  FIX:   Remove the unused 'import json' line."
+            ERRORS_FOUND=$((ERRORS_FOUND + 1))
+        fi
+    fi
+
+    # Check for 'import os'
+    if grep -Pq '^import os' "$pyfile"; then
+        OS_USAGES=$(grep -c 'os\.' "$pyfile" 2>/dev/null || true)
+        if [ "$OS_USAGES" -eq 0 ]; then
+            echo "  ERROR: In $pyfile, 'import os' exists but 'os' is never used."
+            echo "  FIX:   Remove the unused 'import os' line."
+            ERRORS_FOUND=$((ERRORS_FOUND + 1))
+        fi
+    fi
+done < <(find "$PROJECT_DIR" -name '*.py' -not -path '*/.venv/*' -not -path '*/venv/*' -not -path '*/__pycache__/*' -not -path '*/old_files/*')
 echo ""
 
 # --- Error 4: 'tb_writer' is possibly unbound ---
