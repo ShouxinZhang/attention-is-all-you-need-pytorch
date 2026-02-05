@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "/home/wudizhe001/Documents/GitHub/attention-is-all-you-need-pytorch/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "./transformer"
+    ],
+    "python.terminal.activateEnvironment": true
+}

@@ -7,7 +7,11 @@
 - `train_modern.py`: 2026 Modern training script (Optimized for RTX 5090/sm_120).
 - `README.md`: Project overview and setup instructions.
 - `requirements.txt`: Python dependencies.
+- `check_errors.sh`: Automated project error checks (pattern checks + repository-wide static type checks).
 - `venv/`: Virtual environment for modern hardware compatibility (PyTorch 2.10.0+cu130).
+- `docs/`: Project documentation.
+  - `architecture/repository-structure.md`: Repository architecture and module structure definition.
+  - `dev_logs/`: Development cycle logs for operational traceability and rollback reference.
 - `.data/`: Raw dataset directory.
   - `multi30k/`: Multi30k dataset files (train, val, test).
 - `multi30k_de_en_modern.pkl`: Processed dataset for 2026 pipelines.
@@ -17,8 +21,8 @@
   - `Constants.py`: Constant values used across the project.
   - `modern_data.py`: Modern Dataset and Vocabulary leaf module.
   - `Layers.py`: Implementation of Transformer layers.
-  - `Models.py`: Transformer model definitions.
+  - `Models.py`: Transformer model definitions and positional encoding utilities.
   - `Modules.py`: Transformer's basic building blocks (e.g., Attention).
   - `Optim.py`: Optimizer wrapper for learning rate scheduling.
   - `SubLayers.py`: Sub-layer implementations (e.g., Feed-Forward, LayerNorm).
-  - `Translator.py`: Translation logic using the trained model.
+  - `Translator.py`: Beam-search translation logic using registered tensor buffers.

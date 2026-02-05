@@ -24,6 +24,7 @@ class PositionalEncoding(nn.Module):
 
     def __init__(self, d_hid, n_position=200):
         super(PositionalEncoding, self).__init__()
+        self.pos_table: torch.Tensor
 
         # Not a parameter
         self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
@@ -42,7 +43,8 @@ class PositionalEncoding(nn.Module):
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
     def forward(self, x):
-        return x + self.pos_table[:, :x.size(1)].clone().detach()
+        pos_table = self.pos_table
+        return x + torch.clone(pos_table[:, :x.size(1)]).detach()
 
 
 class Encoder(nn.Module):

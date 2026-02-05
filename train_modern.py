@@ -83,6 +83,7 @@ def eval_epoch(model, validation_data, device, opt):
     return total_loss/n_word_total, n_word_correct/n_word_total
 
 def train(model, training_data, validation_data, optimizer, device, opt, start_epoch=0):
+    tb_writer = None
     if opt.use_tb:
         from torch.utils.tensorboard import SummaryWriter
         tb_writer = SummaryWriter(log_dir=os.path.join(opt.output_dir, 'tensorboard'))
@@ -128,7 +129,7 @@ def train(model, training_data, validation_data, optimizer, device, opt, start_e
             log_tf.write(f'{epoch_i},{train_loss: 8.5f},{train_ppl: 8.5f},{100*train_accu:3.3f}\n')
             log_vf.write(f'{epoch_i},{valid_loss: 8.5f},{valid_ppl: 8.5f},{100*valid_accu:3.3f}\n')
 
-        if opt.use_tb:
+        if tb_writer is not None:
             tb_writer.add_scalars('ppl', {'train': train_ppl, 'val': valid_ppl}, epoch_i)
             tb_writer.add_scalars('accuracy', {'train': train_accu*100, 'val': valid_accu*100}, epoch_i)
             tb_writer.add_scalar('learning_rate', lr, epoch_i)
@@ -166,7 +167,8 @@ def main():
     np.random.seed(opt.seed)
     random.seed(opt.seed)
 
-    if not os.path.exists(opt.output_dir): os.makedirs(opt.output_dir)
+    if not os.path.exists(opt.output_dir):
+        os.makedirs(opt.output_dir)
 
     device = torch.device('cuda' if opt.cuda else 'cpu')
 

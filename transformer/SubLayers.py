@@ -1,5 +1,4 @@
 ''' Define the sublayers in encoder/decoder layer '''
-import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from transformer.Modules import ScaledDotProductAttention
