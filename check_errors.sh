@@ -3,9 +3,10 @@
 # Errors checked:
 #   1. Tensor not callable: model parameter lacks type annotation in Translator.py
 #   2. seq_lens possibly unbound: used outside loop without initialization in Translator.py
-#   3. np not accessed: unused numpy import in project files
+#   3. Unused imports: AST-based scan for all imports
 #   4. tb_writer possibly unbound: conditionally assigned but not initialized in train_modern.py
-#   5. Repository-wide static type checks for Python files
+#   5. Validate __all__: strings + present in module
+#   6. Repository-wide static type checks for Python files
 
 set -e
 
@@ -65,50 +66,30 @@ else
 fi
 echo ""
 
-# --- Error 3: Unused imports (np, pickle, json, os) ---
-echo "[Check 3] Unused imports: np, pickle, json, os"
-# Only check project .py files, exclude .venv and __pycache__
-while IFS= read -r pyfile; do
-    # Check for 'import numpy as np'
-    if grep -Pq '^import numpy as np' "$pyfile"; then
-        NP_USAGES=$(grep -c 'np\.' "$pyfile" 2>/dev/null || true)
-        if [ "$NP_USAGES" -eq 0 ]; then
-            echo "  ERROR: In $pyfile, 'import numpy as np' exists but 'np' is never used."
-            echo "  FIX:   Remove the unused 'import numpy as np' line."
-            ERRORS_FOUND=$((ERRORS_FOUND + 1))
-        fi
-    fi
+# --- Error 3: Unused imports (general) ---
+echo "[Check 3] Unused imports (AST scan): import xxx / from xxx import yyy"
 
-    # Check for 'import pickle'
-    if grep -Pq '^import pickle' "$pyfile"; then
-        PICKLE_USAGES=$(grep -c 'pickle\.' "$pyfile" 2>/dev/null || true)
-        if [ "$PICKLE_USAGES" -eq 0 ]; then
-            echo "  ERROR: In $pyfile, 'import pickle' exists but 'pickle' is never used."
-            echo "  FIX:   Remove the unused 'import pickle' line."
-            ERRORS_FOUND=$((ERRORS_FOUND + 1))
-        fi
-    fi
+PYTHON_CMD=""
+if [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    PYTHON_CMD="$PROJECT_DIR/.venv/bin/python"
+elif [ -x "$PROJECT_DIR/venv/bin/python" ]; then
+    PYTHON_CMD="$PROJECT_DIR/venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+    PYTHON_CMD="$(command -v python3)"
+fi
 
-    # Check for 'import json'
-    if grep -Pq '^import json' "$pyfile"; then
-        JSON_USAGES=$(grep -c 'json\.' "$pyfile" 2>/dev/null || true)
-        if [ "$JSON_USAGES" -eq 0 ]; then
-            echo "  ERROR: In $pyfile, 'import json' exists but 'json' is never used."
-            echo "  FIX:   Remove the unused 'import json' line."
-            ERRORS_FOUND=$((ERRORS_FOUND + 1))
-        fi
-    fi
+if [ -z "$PYTHON_CMD" ]; then
+    echo "  SKIP: python interpreter not found; cannot scan unused imports."
+else
+    set +e
+    PYTHONPATH="$PROJECT_DIR" "$PYTHON_CMD" -m tools.check_errors.unused_imports "$PROJECT_DIR"
+    PY_EXIT=$?
+    set -e
 
-    # Check for 'import os'
-    if grep -Pq '^import os' "$pyfile"; then
-        OS_USAGES=$(grep -c 'os\.' "$pyfile" 2>/dev/null || true)
-        if [ "$OS_USAGES" -eq 0 ]; then
-            echo "  ERROR: In $pyfile, 'import os' exists but 'os' is never used."
-            echo "  FIX:   Remove the unused 'import os' line."
-            ERRORS_FOUND=$((ERRORS_FOUND + 1))
-        fi
+    if [ "$PY_EXIT" -ne 0 ]; then
+        ERRORS_FOUND=$((ERRORS_FOUND + 1))
     fi
-done < <(find "$PROJECT_DIR" -name '*.py' -not -path '*/.venv/*' -not -path '*/venv/*' -not -path '*/__pycache__/*' -not -path '*/old_files/*')
+fi
 echo ""
 
 # --- Error 4: 'tb_writer' is possibly unbound ---
@@ -139,8 +120,34 @@ else
 fi
 echo ""
 
-# --- Error 5: repository-wide static type check ---
-echo "[Check 5] Repository-wide static type checks"
+# --- Error 5: Validate __all__ exports ---
+echo "[Check 5] Validate __all__ exports (strings + present in module)"
+
+PYTHON_CMD=""
+if [ -x "$PROJECT_DIR/.venv/bin/python" ]; then
+    PYTHON_CMD="$PROJECT_DIR/.venv/bin/python"
+elif [ -x "$PROJECT_DIR/venv/bin/python" ]; then
+    PYTHON_CMD="$PROJECT_DIR/venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+    PYTHON_CMD="$(command -v python3)"
+fi
+
+if [ -z "$PYTHON_CMD" ]; then
+    echo "  SKIP: python interpreter not found; cannot validate __all__."
+else
+    set +e
+    PYTHONPATH="$PROJECT_DIR" "$PYTHON_CMD" -m tools.check_errors.validate_dunder_all "$PROJECT_DIR"
+    PY_EXIT=$?
+    set -e
+
+    if [ "$PY_EXIT" -ne 0 ]; then
+        ERRORS_FOUND=$((ERRORS_FOUND + 1))
+    fi
+fi
+echo ""
+
+# --- Error 6: repository-wide static type check ---
+echo "[Check 6] Repository-wide static type checks"
 PYRIGHT_CMD=()
 PYTHON_PATH=""
 
